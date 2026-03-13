@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Cover Letter Builder</title>
+</head>
+<body>
+    <h1>Generate a Cover Letter</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        <label>Select your CV:</label><br>
+        <select name="cv_id">
+            {% for cv in cvs %}
+                <option value="{{ cv.id }}">{{ cv.title }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <label>Paste Job Description:</label><br>
+        <textarea name="job_description" rows="10" cols="50"></textarea>
+        <br><br>
+
+        <button type="submit">Generate Letter</button>
+    </form>
+
+    {% if letter %}
+        <hr>
+        <h2>Your Generated Letter:</h2>
+        <div style="white-space: pre-wrap; background: #f4f4f4; padding: 20px;">
+            {{ letter }}
+        </div>
+    {% endif %}
+</body>
+</html>
