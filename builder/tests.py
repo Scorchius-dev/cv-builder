@@ -2,6 +2,7 @@ from types import SimpleNamespace
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.core import mail
 from unittest.mock import patch
 from django.test.utils import override_settings
 
@@ -77,6 +78,76 @@ class CareerProTests(TestCase):
         # (Should return 404 Not Found)
         response = self.client.post(reverse('cv_delete', args=[self.cv.pk]))
         self.assertEqual(response.status_code, 404)
+
+    @override_settings(
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'
+    )
+    def test_signup_creates_user_and_sends_confirmation_email(self):
+        """Signup should create user, login, flash success, and send email."""
+        response = self.client.post(
+            reverse('signup'),
+            {
+                'username': 'newuser',
+                'email': 'newuser@example.com',
+                'password1': 'StrongPassword123!',
+                'password2': 'StrongPassword123!',
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(User.objects.filter(username='newuser').exists())
+        self.assertTrue('_auth_user_id' in self.client.session)
+        self.assertContains(response, 'Account created successfully')
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('Welcome to AI Career Pro', mail.outbox[0].subject)
+        self.assertIn('newuser@example.com', mail.outbox[0].to)
+
+    @override_settings(
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'
+    )
+    def test_signup_without_email_creates_user(self):
+        """Signup should work without email and skip sending email."""
+        response = self.client.post(
+            reverse('signup'),
+            {
+                'username': 'noemailuser',
+                'email': '',
+                'password1': 'StrongPassword123!',
+                'password2': 'StrongPassword123!',
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(User.objects.filter(username='noemailuser').exists())
+        self.assertContains(response, 'Account created successfully.')
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_signup_rejects_duplicate_email(self):
+        """Signup should block creating another account with same email."""
+        User.objects.create_user(
+            username='emailowner',
+            email='taken@example.com',
+            password='password123',
+        )
+
+        response = self.client.post(
+            reverse('signup'),
+            {
+                'username': 'differentuser',
+                'email': 'taken@example.com',
+                'password1': 'StrongPassword123!',
+                'password2': 'StrongPassword123!',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            'An account with this email already exists.',
+        )
 
     # --- 3. AI LOGIC TESTING ---
 

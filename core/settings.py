@@ -136,3 +136,13 @@ STRIPE_PREMIUM_MONTHLY_DISPLAY = os.getenv(
 # Authentication Redirects
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'index'
+
+# Email settings
+EMAIL_BACKEND = os.getenv(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend',
+)
+DEFAULT_FROM_EMAIL = os.getenv(
+    'DEFAULT_FROM_EMAIL',
+    'no-reply@aicareerpro.local',
+)

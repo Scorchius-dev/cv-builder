@@ -1,10 +1,10 @@
 import datetime
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.mail import send_mail
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.conf import settings
 from django.urls import reverse
@@ -21,7 +21,7 @@ from reportlab.lib.units import inch
 
 from .models import CV, CoverLetter, Profile
 from .services import generate_cover_letter
-from .forms import CVForm
+from .forms import CVForm, SignupForm
 
 # Make sure STRIPE_SECRET_KEY is in your settings.py
 stripe.api_key = getattr(settings, 'STRIPE_SECRET_KEY', 'sk_test_placeholder')
@@ -82,14 +82,46 @@ def _sync_profile_from_checkout_session_id(profile, session_id):
 
 
 def signup(request):
-    if request.method == "POST":
-        form = UserCreationForm(request.POST)
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
         if form.is_valid():
             user = form.save()
+            email_sent = False
+            if user.email:
+                send_mail(
+                    subject='Welcome to AI Career Pro',
+                    message=(
+                        f'Hi {user.username},\n\n'
+                        'Your account has been created successfully. '
+                        'You can now create your CV profile and generate '
+                        'tailored cover letters.\n\n'
+                        'Thanks,\nAI Career Pro'
+                    ),
+                    from_email=getattr(
+                        settings,
+                        'DEFAULT_FROM_EMAIL',
+                        'no-reply@aicareerpro.local',
+                    ),
+                    recipient_list=[user.email],
+                    fail_silently=True,
+                )
+                email_sent = True
             login(request, user)
+            if email_sent:
+                messages.success(
+                    request,
+                    'Account created successfully. A welcome email '
+                    'was sent to your inbox.',
+                )
+            else:
+                messages.success(request, 'Account created successfully.')
             return redirect('index')
+        messages.error(
+            request,
+            'We could not create your account. Please fix the errors below.',
+        )
     else:
-        form = UserCreationForm()
+        form = SignupForm()
     return render(request, 'registration/signup.html', {'form': form})
 
 
