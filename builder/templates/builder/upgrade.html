@@ -2,9 +2,10 @@
 
 {% block content %}
 <div class="container mt-4">
+    <!-- Plan hero: headline, value proposition, and monthly price -->
     <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow-sm border-0 p-4">
+        <div class="col-12 col-xl-10">
+            <div class="card shadow-sm border-0 p-4 app-card">
                 <div class="row align-items-center">
                     <div class="col-md-8">
                         <h2 class="mb-2">Premium Career Builder</h2>
@@ -24,9 +25,10 @@
         </div>
     </div>
 
+    <!-- Feature list and primary billing action -->
     <div class="row justify-content-center mt-3">
-        <div class="col-md-10">
-            <div class="card shadow-sm p-4">
+        <div class="col-12 col-xl-10">
+            <div class="card shadow-sm p-4 app-card">
                 <h4 class="mb-3">What You Get</h4>
                 <ul class="mb-4">
                     <li>Download polished PDFs for every generated cover letter.</li>
@@ -44,14 +46,14 @@
                 </div>
                 <form method="post" action="{% url 'billing_portal' %}" id="billing-portal-form">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-primary" id="billing-portal-btn">
+                    <button type="submit" class="btn btn-outline-primary mobile-full-width" id="billing-portal-btn">
                         Manage Billing
                     </button>
                 </form>
                 {% else %}
                 <form method="post" action="{% url 'create_checkout_session' %}" id="checkout-form">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-primary btn-lg" id="checkout-btn">
+                    <button type="submit" class="btn btn-primary btn-lg mobile-full-width" id="checkout-btn">
                         Start Premium Subscription
                     </button>
                 </form>
@@ -63,9 +65,10 @@
         </div>
     </div>
 
+    <!-- Quick billing recap for trust and transparency -->
     <div class="row justify-content-center mt-3">
-        <div class="col-md-10">
-            <div class="card shadow-sm p-4">
+        <div class="col-12 col-xl-10">
+            <div class="card shadow-sm p-4 app-card">
                 <h4 class="mb-3">Billing Summary</h4>
                 <div class="row">
                     <div class="col-md-4 mb-2">
@@ -97,6 +100,7 @@
     </div>
 </div>
 <script>
+    // Disable action buttons after click to avoid duplicate Stripe sessions.
     const checkoutForm = document.getElementById('checkout-form');
     const checkoutBtn = document.getElementById('checkout-btn');
     if (checkoutForm && checkoutBtn) {

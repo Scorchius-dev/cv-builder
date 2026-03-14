@@ -1,3 +1,5 @@
+"""AI service helpers for generating tailored cover letters."""
+
 import os
 from google import genai
 from dotenv import load_dotenv
@@ -12,6 +14,8 @@ if not _api_key:
 
 
 def generate_cover_letter(cv_data, job_description):
+    """Generate a job-specific cover letter from CV data + job description."""
+
     if not _client:
         return (
             'Configuration Error: GEMINI_API_KEY is missing '
@@ -39,6 +43,7 @@ def generate_cover_letter(cv_data, job_description):
     )
 
     try:
+        # Keep model choice explicit so it is easy to swap in one place later.
         response = _client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt,

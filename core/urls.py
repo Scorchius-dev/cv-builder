@@ -1,3 +1,5 @@
+"""URL routing table for all app pages and Stripe endpoints."""
+
 from django.contrib import admin
 from django.urls import path, include
 from builder.views import (

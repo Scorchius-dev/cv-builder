@@ -6,22 +6,162 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Career Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI Variable Text', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #1f2937;
+            line-height: 1.55;
+        }
+
+        h1, h2, h3, h4, h5 {
+            letter-spacing: -0.02em;
+            font-weight: 650;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .form-text,
+        .text-muted,
+        .small {
+            line-height: 1.45;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #6b7280 !important;
+            opacity: 1;
+        }
+
+        .card p:last-child,
+        .card ul:last-child {
+            margin-bottom: 0;
+        }
+
+        .skip-link {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            z-index: 1050;
+        }
+
+        .skip-link:focus {
+            left: 1rem;
+            top: 1rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .navbar-actions {
+                width: 100%;
+                align-items: stretch !important;
+            }
+
+            .navbar-actions .btn,
+            .navbar-actions form {
+                width: 100%;
+            }
+
+            .navbar-actions form button {
+                width: 100%;
+            }
+
+            .navbar-actions .text-white {
+                padding-top: 0.25rem;
+                padding-bottom: 0.25rem;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .app-card {
+                padding: 1rem !important;
+            }
+
+            .mobile-full-width {
+                width: 100%;
+            }
+
+            .mobile-gap-lg {
+                gap: 1rem !important;
+            }
+
+            .mobile-section-space > [class*='col-'] {
+                margin-bottom: 1rem;
+            }
+
+            .mobile-section-space > [class*='col-']:last-child {
+                margin-bottom: 0;
+            }
+
+            .mobile-stack {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+
+            .mobile-stack > * {
+                width: 100%;
+            }
+
+            .mobile-stack .btn,
+            .mobile-stack form,
+            .mobile-stack form button {
+                width: 100%;
+            }
+
+            .mobile-center-text {
+                text-align: center;
+            }
+
+            .mobile-actions > .btn,
+            .mobile-actions > form,
+            .mobile-actions > a,
+            .mobile-actions > button {
+                width: 100%;
+            }
+
+            footer .container {
+                justify-content: center !important;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-light d-flex flex-column min-vh-100">
-    <nav class="navbar navbar-dark bg-primary mb-4">
+    <a class="skip-link btn btn-light" href="#main-content">Skip to main content</a>
+    <!-- Global navigation: authentication, plan status, and quick actions -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4" aria-label="Primary">
         <div class="container">
             <a class="navbar-brand h1" href="{% url 'index' %}">AI Career Pro</a>
-            <div>
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#main-navbar"
+                aria-controls="main-navbar"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="main-navbar">
+                <div class="navbar-actions ms-auto d-flex flex-wrap align-items-center gap-2 mt-3 mt-lg-0">
                 {% if user.is_authenticated %}
-                <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm me-2">Dashboard</a>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm">Dashboard</a>
                 {% if user.profile.is_premium %}
-                <a href="{% url 'upgrade_page' %}" class="btn btn-success btn-sm me-2">Plan Active</a>
+                <a href="{% url 'upgrade_page' %}" class="btn btn-success btn-sm">Plan Active</a>
                 {% else %}
-                <a href="{% url 'upgrade_page' %}" class="btn btn-warning btn-sm me-2">Upgrade</a>
+                <a href="{% url 'upgrade_page' %}" class="btn btn-warning btn-sm">Upgrade</a>
                 {% endif %}
-                <a href="{% url 'cv_create' %}" class="btn btn-light btn-sm me-3">+ New CV</a>
-                <span class="text-white me-3">Hi, {{ user.username }}</span>
+                {% if request.resolver_match.url_name != 'dashboard' %}
+                {% if request.resolver_match.url_name == 'cv_create' %}
+                <span class="btn btn-secondary btn-sm disabled" aria-disabled="true">+ New CV</span>
+                {% else %}
+                <a href="{% url 'cv_create' %}" class="btn btn-light btn-sm">+ New CV</a>
+                {% endif %}
+                {% endif %}
+                <span class="text-white px-1">Hi, {{ user.username }}</span>
                 <form action="{% url 'logout' %}" method="post" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
@@ -30,13 +170,15 @@
                 <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">Login</a>
                 <a href="{% url 'signup' %}" class="btn btn-light btn-sm">Sign Up</a>
                 {% endif %}
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="container flex-grow-1 pb-4">
+    <main id="main-content" class="container flex-grow-1 pb-4" tabindex="-1">
+        <!-- Flash messages shown after form submissions and redirects -->
         {% if messages %}
-        <div class="mb-3">
+        <div class="mb-3" aria-live="polite">
             {% for message in messages %}
             <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
                 {{ message }}
@@ -47,9 +189,10 @@
         {% endif %}
 
         {% block content %}
+    <!-- Home-page helper banner shown only for authenticated users -->
         {% if user.is_authenticated %}
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="card border-0 shadow-sm mb-3 app-card">
+            <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2 mobile-stack">
                 <div>
                     <h5 class="mb-1">Build better applications faster</h5>
                     <p class="text-muted mb-0">
@@ -70,8 +213,9 @@
         {% endif %}
 
         <div class="row">
+            <!-- Left column: cover-letter generation form -->
             <div class="col-md-5">
-                <div class="card shadow-sm p-4">
+                <div class="card shadow-sm p-4 app-card">
                     <h3>Generate Letter</h3>
                     <hr>
                     <form method="POST" id="generate-letter-form">
@@ -115,9 +259,10 @@
                 </div>
             </div>
 
+            <!-- Right column: generated result and follow-up actions -->
             <div class="col-md-7">
                 {% if letter %}
-                <div class="card shadow-sm p-4">
+                <div class="card shadow-sm p-4 app-card">
                     <h3>Your Result</h3>
                     <hr>
                     <div
@@ -128,7 +273,7 @@
                     >
                         {{ letter }}
                     </div>
-                    <div class="d-flex gap-2 mt-3 flex-wrap">
+                    <div class="d-flex gap-2 mt-3 flex-wrap mobile-stack">
                         <button type="button" class="btn btn-outline-primary btn-sm" id="copy-generated-letter-btn">
                             Copy Letter
                         </button>
@@ -157,8 +302,9 @@
             </div>
         </div>
         {% endblock %}
-    </div>
+    </main>
 
+    <!-- Legal/footer links available across the whole app -->
     <footer class="py-4 border-top bg-white">
         <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
             <span class="text-muted small">AI Career Pro</span>
@@ -172,6 +318,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Prevent duplicate submissions while generation is in progress.
         const generateForm = document.getElementById('generate-letter-form');
         const generateBtn = document.getElementById('generate-btn');
         if (generateForm && generateBtn) {
@@ -181,6 +328,7 @@
             });
         }
 
+        // Copy generated letter text and give quick button feedback.
         const copyGeneratedLetterBtn = document.getElementById(
             'copy-generated-letter-btn'
         );

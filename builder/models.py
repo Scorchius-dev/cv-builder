@@ -1,3 +1,5 @@
+"""Data models for CVs, generated cover letters, and billing profile."""
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
@@ -5,6 +7,8 @@ from django.dispatch import receiver
 
 
 class CV(models.Model):
+    """Stores one reusable CV profile per user workflow."""
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(
         max_length=200,
@@ -25,6 +29,8 @@ class CV(models.Model):
 
 
 class CoverLetter(models.Model):
+    """Stores generated cover letters linked to a CV and user."""
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     cv = models.ForeignKey(CV, on_delete=models.CASCADE)
     job_title = models.CharField(max_length=200)
@@ -37,6 +43,8 @@ class CoverLetter(models.Model):
 
 
 class Profile(models.Model):
+    """Extends user with premium and Stripe subscription metadata."""
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     is_premium = models.BooleanField(default=False)
     stripe_customer_id = models.CharField(max_length=255, blank=True)
@@ -47,11 +55,15 @@ class Profile(models.Model):
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
+    """Auto-create a profile whenever a new auth user is created."""
+
     if created:
         Profile.objects.get_or_create(user=instance)
 
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
+    """Keep the profile persisted when a user record is saved."""
+
     if hasattr(instance, 'profile'):
         instance.profile.save()

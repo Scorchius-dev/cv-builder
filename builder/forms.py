@@ -1,3 +1,5 @@
+"""Forms used by authentication and CV management views."""
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
@@ -5,6 +7,8 @@ from .models import CV
 
 
 class SignupForm(UserCreationForm):
+    """Custom signup form with optional email for smoother onboarding."""
+
     email = forms.EmailField(
         required=False,
         widget=forms.EmailInput(
@@ -20,6 +24,8 @@ class SignupForm(UserCreationForm):
         fields = ('username', 'email', 'password1', 'password2')
 
     def __init__(self, *args, **kwargs):
+        """Apply Bootstrap classes and friendly placeholders."""
+
         super().__init__(*args, **kwargs)
         self.fields['username'].widget.attrs.update(
             {
@@ -41,6 +47,8 @@ class SignupForm(UserCreationForm):
         )
 
     def clean_email(self):
+        """Normalize and validate email uniqueness only when provided."""
+
         email = (self.cleaned_data.get('email') or '').strip().lower()
         if email and User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError(
@@ -49,6 +57,8 @@ class SignupForm(UserCreationForm):
         return email
 
     def save(self, commit=True):
+        """Persist email onto the user record before saving."""
+
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
         if commit:
@@ -57,6 +67,8 @@ class SignupForm(UserCreationForm):
 
 
 class CVForm(forms.ModelForm):
+    """Form for collecting structured CV data used by the AI prompt."""
+
     class Meta:
         model = CV
         fields = [
@@ -127,6 +139,8 @@ class CVForm(forms.ModelForm):
         }
 
     def _clean_non_empty_text(self, field_name):
+        """Shared validator for required textareas after trimming spaces."""
+
         value = self.cleaned_data.get(field_name, '')
         cleaned_value = value.strip()
         if not cleaned_value:

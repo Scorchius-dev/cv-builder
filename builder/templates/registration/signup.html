@@ -1,18 +1,20 @@
 {% extends 'builder/index.html' %}
 {% block content %}
+<!-- Signup surface with optional email onboarding -->
 <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-sm border-0 p-4 mt-4 mt-md-5">
+    <div class="col-12 col-md-6 col-lg-5">
+        <div class="card shadow-sm border-0 p-4 mt-4 mt-md-5 app-card">
             <h3 class="mb-1">Create Your Account</h3>
             <p class="text-muted small mb-4">
                 Start free. Email is optional and only used for account updates.
             </p>
 
+            <!-- Account creation form -->
             <form method="post" id="signup-form" novalidate>
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
-                <div class="alert alert-danger py-2">
+                <div class="alert alert-danger py-2" role="alert">
                     {{ form.non_field_errors }}
                 </div>
                 {% endif %}
@@ -65,6 +67,32 @@
     </div>
 </div>
 <script>
+    const signupUsernameInput = document.querySelector(
+        '#signup-form input[name="username"]'
+    );
+    const signupEmailInput = document.querySelector(
+        '#signup-form input[name="email"]'
+    );
+    const signupPassword1Input = document.querySelector(
+        '#signup-form input[name="password1"]'
+    );
+    const signupPassword2Input = document.querySelector(
+        '#signup-form input[name="password2"]'
+    );
+    if (signupUsernameInput) {
+        signupUsernameInput.setAttribute('autocomplete', 'username');
+    }
+    if (signupEmailInput) {
+        signupEmailInput.setAttribute('autocomplete', 'email');
+    }
+    if (signupPassword1Input) {
+        signupPassword1Input.setAttribute('autocomplete', 'new-password');
+    }
+    if (signupPassword2Input) {
+        signupPassword2Input.setAttribute('autocomplete', 'new-password');
+    }
+
+    // Prevent duplicate account creation submissions.
     const signupForm = document.getElementById('signup-form');
     const signupBtn = document.getElementById('signup-btn');
     if (signupForm && signupBtn) {

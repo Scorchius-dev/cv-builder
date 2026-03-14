@@ -1,18 +1,20 @@
 {% extends 'builder/index.html' %}
 {% block content %}
+<!-- Login surface focused on quick return access -->
 <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
+    <div class="col-12 col-md-6 col-lg-5">
         <div class="card shadow-sm border-0 p-4 mt-4 mt-md-5 auth-card">
             <h3 class="mb-1">Welcome Back</h3>
             <p class="text-muted small mb-4">
                 Continue building tailored applications in minutes.
             </p>
 
+            <!-- Credential form -->
             <form method="post" id="login-form" novalidate>
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
-                <div class="alert alert-danger py-2">
+                <div class="alert alert-danger py-2" role="alert">
                     {{ form.non_field_errors }}
                 </div>
                 {% endif %}
@@ -47,6 +49,22 @@
     }
 </style>
 <script>
+    const loginUsernameInput = document.querySelector(
+        '#login-form input[name="username"]'
+    );
+    const loginPasswordInput = document.querySelector(
+        '#login-form input[name="password"]'
+    );
+    if (loginUsernameInput) {
+        loginUsernameInput.setAttribute('autocomplete', 'username');
+        loginUsernameInput.setAttribute('placeholder', 'Enter your username');
+    }
+    if (loginPasswordInput) {
+        loginPasswordInput.setAttribute('autocomplete', 'current-password');
+        loginPasswordInput.setAttribute('placeholder', 'Enter your password');
+    }
+
+    // Disable button after submit to reduce accidental double login posts.
     const loginForm = document.getElementById('login-form');
     const loginBtn = document.getElementById('login-btn');
     if (loginForm && loginBtn) {

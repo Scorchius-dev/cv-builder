@@ -14,8 +14,12 @@ load_dotenv()
 
 # Quick-start development settings
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-fallback-key')
-DEBUG = True
-ALLOWED_HOSTS = []
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv('ALLOWED_HOSTS', '').split(',')
+    if host.strip()
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -80,7 +84,7 @@ else:
         }
     }
 
-# Password validation - Fixed "Line Too Long" errors
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': (
@@ -116,6 +120,7 @@ USE_TZ = True
 
 # Static files
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- API Configuration (Hiding your keys) ---
@@ -146,3 +151,24 @@ DEFAULT_FROM_EMAIL = os.getenv(
     'DEFAULT_FROM_EMAIL',
     'no-reply@aicareerpro.local',
 )
+
+# Security defaults for production-style deployments.
+if not DEBUG:
+    SECURE_SSL_REDIRECT = os.getenv(
+        'SECURE_SSL_REDIRECT',
+        'True',
+    ).lower() == 'true'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '31536000'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    csrf_trusted_origins_raw = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+    CSRF_TRUSTED_ORIGINS = [
+        origin.strip()
+        for origin in csrf_trusted_origins_raw.split(',')
+        if origin.strip()
+    ]

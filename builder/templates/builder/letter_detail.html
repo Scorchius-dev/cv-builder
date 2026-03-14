@@ -2,6 +2,7 @@
 
 {% block content %}
 <div class="container mt-4">
+    <!-- Breadcrumb helps users return to dashboard context quickly -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
@@ -9,10 +10,11 @@
         </ol>
     </nav>
 
+    <!-- Letter content card with metadata and actions -->
     <div class="row justify-content-center">
-        <div class="col-md-9">
-            <div class="card shadow-sm border-0 p-4">
-                <div class="d-flex justify-content-between align-items-start mb-2">
+        <div class="col-12 col-lg-9">
+            <div class="card shadow-sm border-0 p-4 app-card">
+                <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2 mobile-center-text">
                     <div>
                         <h2 class="text-primary mb-1">{{ letter.job_title }}</h2>
                         <h5 class="text-muted">{{ letter.company_name }}</h5>
@@ -22,28 +24,27 @@
 
                 <hr>
 
-                <div class="p-4 bg-white border rounded shadow-inner mb-4"
+                <div class="p-3 p-md-4 bg-white border rounded shadow-inner mb-4"
                      style="white-space: pre-wrap; font-family: 'Times New Roman', Times, serif; font-size: 1.15rem; line-height: 1.6; color: #333;">
                     {{ letter.generated_content }}
                 </div>
 
-                <div class="d-flex justify-content-between pt-3 border-top">
+                <div class="d-flex justify-content-between pt-3 border-top flex-wrap gap-2 mobile-stack">
                     <a href="{% url 'letter_delete' letter.pk %}"
-                       class="btn btn-outline-danger btn-sm"
-                       onclick="return confirm('Are you certain you want to delete this letter permanently?')">
+                       class="btn btn-outline-danger btn-sm">
                         Delete Letter
                     </a>
 
-                    <div>
+                    <div class="d-flex flex-wrap gap-2 mobile-stack">
                         <button
                             type="button"
-                            class="btn btn-outline-primary me-2"
+                            class="btn btn-outline-primary"
                             id="copy-letter-btn"
                             data-letter-content="{{ letter.generated_content|escapejs }}"
                         >
                             Copy Text
                         </button>
-                        <a href="{% url 'dashboard' %}" class="btn btn-light me-2">Close</a>
+                        <a href="{% url 'dashboard' %}" class="btn btn-light">Close</a>
                         {% if profile.is_premium %}
                         <a href="{% url 'export_pdf' letter.pk %}" class="btn btn-success px-4">
                             Download PDF
@@ -61,6 +62,7 @@
 </div>
 
 <script>
+    // Copy current letter text to clipboard with lightweight status feedback.
     const copyButton = document.getElementById('copy-letter-btn');
     if (copyButton) {
         copyButton.addEventListener('click', async () => {

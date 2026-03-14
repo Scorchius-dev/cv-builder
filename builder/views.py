@@ -1,3 +1,5 @@
+"""Main request handlers for auth, CV CRUD, generation, and billing flows."""
+
 import datetime
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -9,6 +11,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.conf import settings
 from django.urls import reverse
 from django.db.models import Q
+from django.core.paginator import Paginator
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -23,11 +26,13 @@ from .models import CV, CoverLetter, Profile
 from .services import generate_cover_letter
 from .forms import CVForm, SignupForm
 
-# Make sure STRIPE_SECRET_KEY is in your settings.py
+# Read once at import time so every Stripe call uses the same key source.
 stripe.api_key = getattr(settings, 'STRIPE_SECRET_KEY', 'sk_test_placeholder')
 
 
 def _profile_from_checkout_session(session):
+    """Resolve a user profile from Stripe checkout session metadata."""
+
     user_id = session.get('client_reference_id')
     if not user_id:
         return None
@@ -39,6 +44,8 @@ def _profile_from_checkout_session(session):
 
 
 def _sync_profile_from_subscription(profile, subscription):
+    """Copy Stripe subscription fields into the local profile model."""
+
     status = subscription.get('status', '')
     period_end_ts = subscription.get('current_period_end')
     period_end = None
@@ -57,6 +64,8 @@ def _sync_profile_from_subscription(profile, subscription):
 
 
 def _sync_profile_from_checkout_session_id(profile, session_id):
+    """Fallback sync path when webhook delivery is delayed in local/dev."""
+
     try:
         checkout_session = stripe.checkout.Session.retrieve(
             session_id,
@@ -82,6 +91,8 @@ def _sync_profile_from_checkout_session_id(profile, session_id):
 
 
 def signup(request):
+    """Handle account creation and optional welcome email dispatch."""
+
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
@@ -127,6 +138,8 @@ def signup(request):
 
 @login_required
 def index(request):
+    """Home page and cover-letter generation endpoint."""
+
     letter = None
     generated_letter_id = None
     profile, _ = Profile.objects.get_or_create(user=request.user)
@@ -194,30 +207,34 @@ def index(request):
 
 @login_required
 def dashboard(request):
+    """Show user CVs, letters, subscription status, and search."""
+
     profile, _ = Profile.objects.get_or_create(user=request.user)
     user_cvs = CV.objects.filter(user=request.user)
-    user_letters = CoverLetter.objects.filter(
+    letters_qs = CoverLetter.objects.filter(
         user=request.user
-    ).order_by('-created_at')
+    ).select_related('cv').order_by('-created_at')
     letter_query = request.GET.get('q', '').strip()
     if letter_query:
-        user_letters = user_letters.filter(
+        letters_qs = letters_qs.filter(
             Q(job_title__icontains=letter_query)
             | Q(company_name__icontains=letter_query)
             | Q(generated_content__icontains=letter_query)
         )
+
+    paginator = Paginator(letters_qs, 10)
+    page_number = request.GET.get('page')
+    letters_page = paginator.get_page(page_number)
 
     return render(
         request,
         'builder/dashboard.html',
         {
             'cvs': user_cvs,
-            'letters': user_letters,
+            'letters': letters_page,
             'letter_query': letter_query,
             'cv_count': user_cvs.count(),
-            'letter_count': CoverLetter.objects.filter(
-                user=request.user
-            ).count(),
+            'letter_count': letters_qs.count(),
             'profile': profile,
         },
     )
@@ -225,6 +242,8 @@ def dashboard(request):
 
 @login_required
 def cv_create(request):
+    """Create a new CV profile for the logged-in user."""
+
     if request.method == "POST":
         form = CVForm(request.POST)
         if form.is_valid():
@@ -240,6 +259,8 @@ def cv_create(request):
 
 @login_required
 def cv_update(request, pk):
+    """Update an existing CV owned by the logged-in user."""
+
     cv = get_object_or_404(CV, pk=pk, user=request.user)
     if request.method == "POST":
         form = CVForm(request.POST, instance=cv)
@@ -258,6 +279,8 @@ def cv_update(request, pk):
 
 @login_required
 def cv_delete(request, pk):
+    """Delete a CV owned by the logged-in user after confirmation."""
+
     cv = get_object_or_404(CV, pk=pk, user=request.user)
     if request.method == "POST":
         cv.delete()
@@ -268,6 +291,8 @@ def cv_delete(request, pk):
 
 @login_required
 def letter_detail(request, pk):
+    """Display one generated cover letter."""
+
     letter = get_object_or_404(CoverLetter, pk=pk, user=request.user)
     profile, _ = Profile.objects.get_or_create(user=request.user)
     return render(
@@ -282,6 +307,8 @@ def letter_detail(request, pk):
 
 @login_required
 def letter_delete(request, pk):
+    """Delete one generated cover letter."""
+
     letter = get_object_or_404(CoverLetter, pk=pk, user=request.user)
     if request.method == "POST":
         letter.delete()
@@ -296,6 +323,8 @@ def letter_delete(request, pk):
 
 @login_required
 def export_pdf(request, pk):
+    """Export a saved letter to PDF (premium users only)."""
+
     profile, _ = Profile.objects.get_or_create(user=request.user)
     if not profile.is_premium:
         messages.info(request, 'Upgrade to premium to export letters as PDF.')
@@ -332,6 +361,8 @@ def export_pdf(request, pk):
 
 @login_required
 def upgrade_page(request):
+    """Render premium plan details and available billing actions."""
+
     profile, _ = Profile.objects.get_or_create(user=request.user)
     return render(
         request,
@@ -346,6 +377,8 @@ def upgrade_page(request):
 @login_required
 @require_POST
 def create_checkout_session(request):
+    """Create a Stripe checkout session for monthly subscription."""
+
     price_id = getattr(settings, 'STRIPE_PRICE_ID', None)
     monthly_amount_pence = int(
         getattr(settings, 'STRIPE_PREMIUM_MONTHLY_PENCE', 999)
@@ -416,6 +449,8 @@ def create_checkout_session(request):
 @login_required
 @require_POST
 def create_billing_portal_session(request):
+    """Open Stripe billing portal for existing subscribers."""
+
     profile, _ = Profile.objects.get_or_create(user=request.user)
     if not profile.stripe_customer_id:
         messages.info(request, 'Start a subscription first to manage billing.')
@@ -435,6 +470,8 @@ def create_billing_portal_session(request):
 
 @login_required
 def payment_success(request):
+    """Handle successful checkout redirect and subscription sync fallback."""
+
     profile, _ = Profile.objects.get_or_create(user=request.user)
     session_id = request.GET.get('session_id')
 
@@ -464,25 +501,35 @@ def payment_success(request):
 
 @login_required
 def payment_cancelled(request):
+    """Handle checkout cancellation and return user to upgrade page."""
+
     messages.info(request, 'Checkout cancelled. No charges were made.')
     return redirect('upgrade_page')
 
 
 def terms_page(request):
+    """Render terms of service page."""
+
     return render(request, 'builder/terms.html')
 
 
 def privacy_page(request):
+    """Render privacy policy page."""
+
     return render(request, 'builder/privacy.html')
 
 
 def refund_policy_page(request):
+    """Render refund policy page."""
+
     return render(request, 'builder/refund_policy.html')
 
 
 @csrf_exempt
 @require_POST
 def stripe_webhook(request):
+    """Process Stripe webhook events to keep subscription state in sync."""
+
     webhook_secret = getattr(settings, 'STRIPE_WEBHOOK_SECRET', None)
     signature = request.META.get('HTTP_STRIPE_SIGNATURE', '')
     payload = request.body

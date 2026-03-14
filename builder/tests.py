@@ -1,3 +1,5 @@
+"""Automated tests for authentication, CRUD flows, and billing behavior."""
+
 from types import SimpleNamespace
 from django.test import TestCase
 from django.urls import reverse
@@ -11,20 +13,17 @@ from .models import CV, CoverLetter, Profile
 
 class CareerProTests(TestCase):
     def setUp(self):
-        """Set up a test environment before every test function runs."""
-        # Create a test user
+        """Create baseline users and one CV used in multiple tests."""
         self.user = User.objects.create_user(
             username='tester',
             password='password123'
         )
 
-        # Create a second user to test security/privacy
         self.other_user = User.objects.create_user(
             username='hacker',
             password='password123'
         )
 
-        # Create a CV for the main tester
         self.cv = CV.objects.create(
             user=self.user,
             title="Software Engineer CV",
@@ -32,8 +31,6 @@ class CareerProTests(TestCase):
             experience="3 Years",
             skills="Django, Python"
         )
-
-    # --- 1. CRUD TESTING ---
 
     def test_dashboard_access_and_read(self):
         """Test if a logged-in user can see their CV on the dashboard."""
@@ -63,19 +60,11 @@ class CareerProTests(TestCase):
         self.assertEqual(CV.objects.count(), 0)
         self.assertRedirects(response, reverse('dashboard'))
 
-    # --- 2. SECURITY & AUTH TESTING ---
-
     def test_privacy_isolation(self):
         """Security: Ensure User A cannot see or edit User B's data."""
-        # Log in as the 'hacker' user
         self.client.login(username='hacker', password='password123')
-
-        # Try to view the dashboard (should not see the tester's CV)
         response = self.client.get(reverse('dashboard'))
         self.assertNotContains(response, "Software Engineer CV")
-
-        # Try to delete the tester's CV directly via URL
-        # (Should return 404 Not Found)
         response = self.client.post(reverse('cv_delete', args=[self.cv.pk]))
         self.assertEqual(response.status_code, 404)
 
@@ -149,12 +138,8 @@ class CareerProTests(TestCase):
             'An account with this email already exists.',
         )
 
-    # --- 3. AI LOGIC TESTING ---
-
     def test_cover_letter_storage(self):
-        """
-        Test if a letter is successfully saved to the database (Persistence).
-        """
+        """Generated letters should be persisted in the database."""
         CoverLetter.objects.create(
             user=self.user,
             cv=self.cv,
