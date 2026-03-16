@@ -4,6 +4,7 @@ Django settings for core project.
 
 import os
 from pathlib import Path
+import dj_database_url
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -63,8 +64,8 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database
 
-# Heroku: Use dj-database-url to parse DATABASE_URL if present, else fall back to local settings
-import dj_database_url
+# Heroku: Parse DATABASE_URL when present.
+# Fall back to SQLite for local development.
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
