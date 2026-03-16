@@ -4,3 +4,6 @@ psycopg2-binary
 python-dotenv
 Django>=4.2,<5.0
 whitenoise>=6.7.0
+stripe
+reportlab
+google-genai
