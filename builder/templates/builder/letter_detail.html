@@ -26,8 +26,7 @@
 
                 <div class="p-3 p-md-4 bg-white border rounded shadow-inner mb-4"
                      style="white-space: pre-wrap; font-family: 'Times New Roman', Times, serif; font-size: 1.15rem; line-height: 1.6; color: #333;">
-                    {{ letter.generated_content }}
-                </div>
+                    {{ letter.generated_content }}</div>
 
                 <div class="d-flex justify-content-between pt-3 border-top flex-wrap gap-2 mobile-stack">
                     <a href="{% url 'letter_delete' letter.pk %}"
@@ -44,6 +43,7 @@
                         >
                             Copy Text
                         </button>
+                        <a href="{% url 'index' %}" class="btn btn-primary">Generate Another Letter</a>
                         <a href="{% url 'dashboard' %}" class="btn btn-light">Close</a>
                         {% if profile.is_premium %}
                         <a href="{% url 'export_pdf' letter.pk %}" class="btn btn-success px-4">

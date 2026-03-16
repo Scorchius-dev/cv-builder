@@ -90,6 +90,66 @@ def _sync_profile_from_checkout_session_id(profile, session_id):
     return profile.is_premium
 
 
+def _normalize_letter_body(raw_text):
+    """Trim noisy leading/trailing lines and remove duplicate salutations."""
+
+    if not raw_text:
+        return ''
+
+    lines = [line.rstrip() for line in raw_text.splitlines()]
+
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    while lines and not lines[-1].strip():
+        lines.pop()
+
+    if lines and lines[0].strip().lower().startswith(('dear ', 'hello ')):
+        lines.pop(0)
+
+    closings = {
+        'sincerely,',
+        'kind regards,',
+        'best regards,',
+        'regards,',
+        'yours sincerely,',
+        'yours faithfully,',
+    }
+    while lines and lines[-1].strip().lower() in closings:
+        lines.pop()
+
+    while lines and not lines[-1].strip():
+        lines.pop()
+
+    return '\n'.join(lines).strip()
+
+
+def _build_structured_letter(user, selected_cv, company_name, letter_body):
+    """Build a predictable business-letter layout with smart placeholders."""
+
+    today = datetime.date.today().strftime('%d %B %Y')
+    applicant_name = user.get_full_name().strip() or 'Your Name'
+    applicant_email = user.email or '[Your Email]'
+    applicant_phone = selected_cv.phone_number or '[Your Phone Number]'
+    applicant_location = selected_cv.location or '[Your Address]'
+
+    clean_body = _normalize_letter_body(letter_body)
+
+    return (
+        f'{applicant_name}\n'
+        f'{applicant_location}\n'
+        f'{applicant_phone}\n'
+        f'{applicant_email}\n\n'
+        f'{today}\n\n'
+        f'Hiring Manager\n'
+        f'{company_name}\n'
+        '[Company Address]\n\n'
+        'Dear Hiring Manager,\n\n'
+        f'{clean_body}\n\n'
+        'Yours sincerely,\n'
+        f'{applicant_name}'
+    )
+
+
 def signup(request):
     """Handle account creation and optional welcome email dispatch."""
 
@@ -181,7 +241,13 @@ def index(request):
             cv_parts.append(f'Location: {selected_cv.location}')
         cv_text = '\n\n'.join(cv_parts)
 
-        letter = generate_cover_letter(cv_text, job_description)
+        generated_body = generate_cover_letter(cv_text, job_description)
+        letter = _build_structured_letter(
+            request.user,
+            selected_cv,
+            company_name,
+            generated_body,
+        )
 
         created_letter = CoverLetter.objects.create(
             user=request.user,

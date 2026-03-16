@@ -148,6 +148,11 @@
             <div class="collapse navbar-collapse" id="main-navbar">
                 <div class="navbar-actions ms-auto d-flex flex-wrap align-items-center gap-2 mt-3 mt-lg-0">
                 {% if user.is_authenticated %}
+                {% if request.resolver_match.url_name == 'index' %}
+                <span class="btn btn-light btn-sm disabled" aria-disabled="true">Generate Letter</span>
+                {% else %}
+                <a href="{% url 'index' %}" class="btn btn-light btn-sm">Generate Letter</a>
+                {% endif %}
                 <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm">Dashboard</a>
                 {% if user.profile.is_premium %}
                 <a href="{% url 'upgrade_page' %}" class="btn btn-success btn-sm">Plan Active</a>
@@ -270,9 +275,7 @@
                         id="generated-letter-content"
                         data-letter-content="{{ letter|escapejs }}"
                         style="white-space: pre-wrap;"
-                    >
-                        {{ letter }}
-                    </div>
+                    >{{ letter }}</div>
                     <div class="d-flex gap-2 mt-3 flex-wrap mobile-stack">
                         <button type="button" class="btn btn-outline-primary btn-sm" id="copy-generated-letter-btn">
                             Copy Letter

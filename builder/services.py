@@ -38,8 +38,9 @@ def generate_cover_letter(cv_data, job_description):
         '- Show genuine enthusiasm for the company and role\n'
         '- Close with a clear, proactive call to action\n'
         '- 3\u20134 paragraphs, under 400 words\n'
-        '- Output the letter body only — no subject line, '
-        'no address header, no metadata'
+        '- Output the BODY PARAGRAPHS ONLY\n'
+        '- Do not include date, addresses, greeting, sign-off, '
+        'or signature lines'
     )
 
     try:
