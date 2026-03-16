@@ -154,7 +154,7 @@
                 <a href="{% url 'index' %}" class="btn btn-light btn-sm">Generate Letter</a>
                 {% endif %}
                 <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm">Dashboard</a>
-                {% if user.profile.is_premium %}
+                {% if profile and profile.is_premium %}
                 <a href="{% url 'upgrade_page' %}" class="btn btn-success btn-sm">Plan Active</a>
                 {% else %}
                 <a href="{% url 'upgrade_page' %}" class="btn btn-warning btn-sm">Upgrade</a>

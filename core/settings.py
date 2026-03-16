@@ -21,6 +21,11 @@ ALLOWED_HOSTS = [
     for host in os.getenv('ALLOWED_HOSTS', '').split(',')
     if host.strip()
 ]
+if not ALLOWED_HOSTS:
+    if DEBUG:
+        ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+    else:
+        ALLOWED_HOSTS = ['https://ai-career-pro-237ce7da783b.herokuapp.com/']
 
 # Application definition
 INSTALLED_APPS = [
@@ -67,11 +72,12 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # Heroku: Parse DATABASE_URL when present.
 # Fall back to SQLite for local development.
+DATABASE_URL = os.getenv('DATABASE_URL')
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600,
-        ssl_require=not DEBUG
+        ssl_require=bool(DATABASE_URL and not DEBUG)
     )
 }
 
@@ -162,6 +168,7 @@ if not DEBUG:
 
     csrf_trusted_origins_raw = os.getenv('CSRF_TRUSTED_ORIGINS', '')
     CSRF_TRUSTED_ORIGINS = [
+        "https://ai-career-pro-237ce7da783b.herokuapp.com/"
         origin.strip()
         for origin in csrf_trusted_origins_raw.split(',')
         if origin.strip()
