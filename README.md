@@ -39,60 +39,27 @@ AI Career Pro is a Django web app that helps users create CV profiles and genera
 - Success and warning accents: Bootstrap `success` and `warning` colors
 	- Used for plan status, upgrade messaging, and positive/attention states.
 
-### UX Artefacts Checklist
+### UX Artefacts
 
-Add links/screenshots for each stage to show your design process clearly.
+#### Wireframes (Low-Fidelity)
 
-#### Wireframes (low-fidelity)
+- [Homepage Wireframe](docs/ux/wireframes/homepage_wireframe.png)
+- [Signup Page Wireframe](docs/ux/wireframes/signuppage_wireframe.png)
+- [Login Page Wireframe](docs/ux/wireframes/loginpage_wireframe.png)
+- [CV Form Wireframe](docs/ux/wireframes/cvform_wireframe.png)
+- [Dashboard Wireframe](docs/ux/wireframes/dashboard_wireframe.png)
+- [Upgrade Page Wireframe](docs/ux/wireframes/upgrade_wireframe.png)
 
-- Landing/Home page wireframe: Add image link.
-- Signup/Login page wireframe: Add image link.
-- Dashboard wireframe: Add image link.
-- CV form wireframe: Add image link.
-- Letter generation/result wireframe: Add image link.
+#### Screenshots (Final Implementation)
 
-What to mention for each wireframe:
-
-- Purpose of the page.
-- Main user actions.
-- Accessibility choices (labels, navigation order, readable spacing).
-
-#### Mockups (high-fidelity)
-
-- Final Home page mockup: Add image link.
-- Final Dashboard mockup: Add image link.
-- Final Generation page mockup: Add image link.
-- Final Mobile view mockup(s): Add image link.
-
-What to mention for each mockup:
-
-- Visual system used (typography, color, spacing).
-- Responsive behavior notes.
-- Any changes from wireframe to final UI.
-
-#### Suggested Folder Structure
-
-Store artefacts in the repository like this:
-
-- docs/ux/wireframes/
-- docs/ux/mockups/
-- docs/ux/screenshots/
-
-#### Suggested File Naming
-
-- wireframe-home-v1.png
-- wireframe-dashboard-v1.png
-- mockup-home-v2.png
-- mockup-dashboard-v2.png
-- mobile-dashboard-v1.png
-
-#### Design Rationale Summary
-
-Add a short paragraph covering:
-
-- Why key layout decisions were made.
-- Why components changed between wireframe and mockup.
-- How feedback/testing influenced final UI.
+- [Landing Page](docs/ux/screenshots/landingpage.png)
+- [Login Page](docs/ux/screenshots/loginpage.png)
+- [Signup Page](docs/ux/screenshots/signuppage.png)
+- [Create CV Page](docs/ux/screenshots/createcvpage.png)
+- [Generate Letter Page](docs/ux/screenshots/generateletterpage.png)
+- [Dashboard Page](docs/ux/screenshots/dashboardpage.png)
+- [Stripe Upgrade Page](docs/ux/screenshots/stripepage.png)
+- [Subscription Page](docs/ux/screenshots/subscriptionpage.png)
 
 ## Design Change Log
 
@@ -209,6 +176,7 @@ Required:
 - `STRIPE_PUBLIC_KEY`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
+- `SantTRIPE_PRICE_ID`
 
 Optional:
 
