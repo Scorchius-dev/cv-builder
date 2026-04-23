@@ -46,7 +46,7 @@ def generate_cover_letter(cv_data, job_description):
     try:
         # Keep model choice explicit so it is easy to swap in one place later.
         response = _client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash',
             contents=prompt,
         )
         if response and response.text:
